@@ -55,12 +55,12 @@ header("content-type: text/javascript; charset=UTF-8");
             this.Atributos[this.getIndAtributo('numero_op')].grid = true;
             this.Atributos[this.getIndAtributo('nro_cuota')].form = false;
             this.Atributos[this.getIndAtributo('forma_pago')].form = true;
-            this.Atributos[this.getIndAtributo('nro_cheque')].form = true;
+            this.Atributos[this.getIndAtributo('nro_cheque')].form = false;
             this.Atributos[this.getIndAtributo('nro_cheque')].valorInicial = 0;
             this.Atributos[this.getIndAtributo('nro_cuenta_bancaria')].form = true;
             this.Atributos[this.getIndAtributo('id_depto_lb')].form = true;
             this.Atributos[this.getIndAtributo('id_cuenta_bancaria')].form = true;
-            this.Atributos[this.getIndAtributo('id_cuenta_bancaria_mov')].form = true;
+            this.Atributos[this.getIndAtributo('id_cuenta_bancaria_mov')].form = false;
 
             this.Atributos[this.getIndAtributo('num_tramite')].bottom_filter = true;
             this.Atributos[this.getIndAtributo('nombre_pago')].bottom_filter = true;
@@ -247,21 +247,26 @@ header("content-type: text/javascript; charset=UTF-8");
         },
         onButtonEdit: function () {
 
-            var anio = new Date();
-            anio = anio.getFullYear();
-            var fecha_inicio = new Date(anio+'/01/1');
+            // this.Cmp.fecha_costo_ini.on('select', function (value, date) {
+            //
+            //     var anio = date.getFullYear();
+            //
+            //     var fecha_inicio = new Date(anio + '/01/1');
+            //     var fecha_fin = new Date(anio + '/12/31');
+            //     //control de fechas de inicio y fin de costos
+            //
+            //     this.Cmp.fecha_costo_ini.setMinValue(fecha_inicio);
+            //     this.Cmp.fecha_costo_ini.setMaxValue(fecha_fin);
+            //     this.Cmp.fecha_costo_fin.setMinValue(fecha_inicio);
+            //     this.Cmp.fecha_costo_fin.setMaxValue(fecha_fin);
+            // }, this);
 
-            var fecha_fin = new Date(anio+'/12/31');
-            this.Cmp.fecha_costo_ini.setMinValue(fecha_inicio);
-            this.Cmp.fecha_costo_ini.setMaxValue(fecha_fin);
-            this.Cmp.fecha_costo_fin.setMinValue(fecha_inicio);
-            this.Cmp.fecha_costo_fin.setMaxValue(fecha_fin);
 
             var data = this.getSelectedData();
             if (data.estado == 'vbfin') {
                 this.Cmp.id_cuenta_bancaria.allowBlank = true;
             } else {
-                this.Cmp.id_cuenta_bancaria.allowBlank = false;
+                this.Cmp.id_cuenta_bancaria.allowBlank = true;
             }
 
             Phx.vista.PlanPagoVbCostos.superclass.onButtonEdit.call(this);
@@ -275,19 +280,19 @@ header("content-type: text/javascript; charset=UTF-8");
             }
 
             //RCM, resetea store del deposito para no mostrar datos al hacer nuevo
-            if (this.Cmp.id_cuenta_bancaria.getValue() > 0) {
-                this.Cmp.id_cuenta_bancaria_mov.store.baseParams = Ext.apply(this.Cmp.id_cuenta_bancaria_mov.store.baseParams, {
-                    id_cuenta_bancaria: -1,
-                    fecha: this.Cmp.fecha_tentativa.getValue()
-                });
-            }
-            else {
-                //RCM, resetea store del deposito para no mostrar datos al hacer nuevo
-                this.Cmp.id_cuenta_bancaria_mov.store.baseParams = Ext.apply(this.Cmp.id_cuenta_bancaria_mov.store.baseParams, {
-                    id_cuenta_bancaria: -1,
-                    fecha: this.Cmp.fecha_tentativa.getValue()
-                });
-            }
+            // if (this.Cmp.id_cuenta_bancaria.getValue() > 0) {
+            //     this.Cmp.id_cuenta_bancaria_mov.store.baseParams = Ext.apply(this.Cmp.id_cuenta_bancaria_mov.store.baseParams, {
+            //         id_cuenta_bancaria: -1,
+            //         fecha: this.Cmp.fecha_tentativa.getValue()
+            //     });
+            // }
+            // else {
+            //     //RCM, resetea store del deposito para no mostrar datos al hacer nuevo
+            //     this.Cmp.id_cuenta_bancaria_mov.store.baseParams = Ext.apply(this.Cmp.id_cuenta_bancaria_mov.store.baseParams, {
+            //         id_cuenta_bancaria: -1,
+            //         fecha: this.Cmp.fecha_tentativa.getValue()
+            //     });
+            // }
 
             if (data.estado == 'vbsolicitante' || data.estado == 'vbfin' || data.estado == 'vbdeposito' || (data.estado == 'vbcostos' && data['prioridad_lp'] != 3)) {
                 this.Cmp.fecha_tentativa.disable();
@@ -309,7 +314,7 @@ header("content-type: text/javascript; charset=UTF-8");
                 }
 
                 this.Cmp.id_cuenta_bancaria.disable();
-                this.Cmp.id_cuenta_bancaria_mov.disable();
+                // this.Cmp.id_cuenta_bancaria_mov.disable();
                 this.Cmp.obs_monto_no_pagado.disable();
                 this.Cmp.obs_descuentos_ley.disable();
             }
@@ -411,11 +416,11 @@ header("content-type: text/javascript; charset=UTF-8");
              },this);
             */
 
-            this.Cmp.fecha_tentativa.on('blur', function (a) {
-                this.Cmp.id_cuenta_bancaria_mov.setValue('');
-                Ext.apply(this.Cmp.id_cuenta_bancaria_mov.store.baseParams, {fecha: this.Cmp.fecha_tentativa.getValue()})
-                this.Cmp.id_cuenta_bancaria_mov.modificado = true;
-            }, this);
+            // this.Cmp.fecha_tentativa.on('blur', function (a) {
+            //     this.Cmp.id_cuenta_bancaria_mov.setValue('');
+            //     Ext.apply(this.Cmp.id_cuenta_bancaria_mov.store.baseParams, {fecha: this.Cmp.fecha_tentativa.getValue()})
+            //     this.Cmp.id_cuenta_bancaria_mov.modificado = true;
+            // }, this);
 
 
             this.Cmp.id_depto_lb.on('select', function (a, b, c) {
@@ -426,18 +431,24 @@ header("content-type: text/javascript; charset=UTF-8");
             }, this);
 
             //Evento para filtrar los depósitos a partir de la cuenta bancaria
-            this.Cmp.id_cuenta_bancaria.on('select', function (data, rec, ind) {
+            // this.Cmp.id_cuenta_bancaria.on('select', function (data, rec, ind) {
+            //
+            //     if (rec.data.centro == 'no') {
+            //         this.Cmp.id_cuenta_bancaria_mov.allowBlank = false;
+            //
+            //     }
+            //     else {
+            //         this.Cmp.id_cuenta_bancaria_mov.allowBlank = true;
+            //     }
+            //     this.Cmp.id_cuenta_bancaria_mov.setValue('');
+            //     this.Cmp.id_cuenta_bancaria_mov.modificado = true;
+            //     Ext.apply(this.Cmp.id_cuenta_bancaria_mov.store.baseParams, {id_cuenta_bancaria: rec.id});
+            // }, this);
 
-                if (rec.data.centro == 'no') {
-                    this.Cmp.id_cuenta_bancaria_mov.allowBlank = false;
+            //(may)para controlar que id de estas cuentas bancarias sean desactivados los campos en forma de pago (61,78,79)
+            this.Cmp.id_cuenta_bancaria.on('select', function (groupRadio,radio) {
+                this.ocultarFP(this,radio.inputValue);
 
-                }
-                else {
-                    this.Cmp.id_cuenta_bancaria_mov.allowBlank = true;
-                }
-                this.Cmp.id_cuenta_bancaria_mov.setValue('');
-                this.Cmp.id_cuenta_bancaria_mov.modificado = true;
-                Ext.apply(this.Cmp.id_cuenta_bancaria_mov.store.baseParams, {id_cuenta_bancaria: rec.id});
             }, this);
 
             //Evento para ocultar/motrar componentes por cheque o transferencia

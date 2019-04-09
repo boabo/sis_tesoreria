@@ -15,7 +15,7 @@ header("content-type: text/javascript; charset=UTF-8");
 			this.maestro = config;
 			Phx.vista.CheckPresupuesto.superclass.constructor.call(this, config);
 			this.init();
-			this.addButton('inserAuto',{ text: 'Revertir ', iconCls: 'blist', disabled: false, handler: this.revertirParcial, tooltip: '<b>Configurar autorizaciones</b><br/>Permite seleccionar desde que modulos  puede selecionarse el concepto'});
+			this.addButton('inserAuto',{ text: 'Revertir/Incrementar', iconCls: 'blist', disabled: false, handler: this.revertirParcial, tooltip: '<b>Configurar autorizaciones</b><br/>Permite seleccionar desde que modulos  puede selecionarse el concepto'});
     
 			this.grid.on('validateedit',function(event){
 				if((event.record.data.comprometido - event.record.data.ejecutado) < event.value){
@@ -144,7 +144,7 @@ header("content-type: text/javascript; charset=UTF-8");
 		},{
 			config : {
 				name : 'revertir',
-				fieldLabel : 'Revertir',
+				fieldLabel : 'Revertir/Incrementar',
 				gwidth : 100
 			},
 			type : 'NumberField',

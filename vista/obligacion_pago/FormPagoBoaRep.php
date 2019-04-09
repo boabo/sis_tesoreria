@@ -1,22 +1,21 @@
 <?php
 /**
  *@package pXP
- *@file    FormPagoCompraExterior.php
+ *@file    FormPagoBoaRep.php
  *@author  franklin.espinoza
- *@date    04/01/2018
- *@description Formulario para pagos de compras en el exterior.
+ *@date    24/12/2018
+ *@description Formulario para pagos Boa Rep.
  */
 header("content-type: text/javascript; charset=UTF-8");
 ?>
 
 <script>
-    Phx.vista.FormPagoCompraExterior=Ext.extend(Phx.frmInterfaz,{
+    Phx.vista.FormPagoBoaRep=Ext.extend(Phx.frmInterfaz,{
         ActSave:'../../sis_tesoreria/control/ObligacionPago/insertarObligacionCompleta',
         tam_pag: 10,
         layout: 'fit',
         autoScroll: false,
         breset: false,
-        
         constructor:function(config)
         {
 
@@ -28,7 +27,7 @@ header("content-type: text/javascript; charset=UTF-8");
             this.buildDetailGrid();
             this.buildGrupos();
 
-            Phx.vista.FormPagoCompraExterior.superclass.constructor.call(this,config);
+            Phx.vista.FormPagoBoaRep.superclass.constructor.call(this,config);
             this.init();
             this.iniciarEventos();
             this.iniciarEventosDetalle();
@@ -54,7 +53,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         totalProperty: 'total',
                         fields: ['id_concepto_ingas','tipo','desc_ingas','movimiento','desc_partida','id_grupo_ots','filtro_ot','requiere_ot'],
                         remoteSort: true,
-                        baseParams:{par_filtro:'desc_ingas#par.codigo#par.nombre_partida',movimiento:'gasto', autorizacion_nulos: 'no'}
+                        baseParams:{par_filtro:'desc_ingas#par.codigo#par.nombre_partida',movimiento:'gasto', autorizacion: 'boarep', autorizacion_nulos: 'no'}
                     }),
                     valueField: 'id_concepto_ingas',
                     displayField: 'desc_ingas',
@@ -443,7 +442,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         padding: '0 0 0 10',
                         items:[
                             {
-                                columnWidth: .40,
+                                columnWidth: .35,
                                 border: false,
                                 layout: 'fit',
                                 bodyStyle: 'padding-right:10px;',
@@ -782,7 +781,7 @@ header("content-type: text/javascript; charset=UTF-8");
                     name: 'tipo_obligacion'
                 },
                 type:'Field',
-                valorInicial: 'pce',
+                valorInicial: 'pbr',
                 form:true
             },
             {
@@ -878,25 +877,6 @@ header("content-type: text/javascript; charset=UTF-8");
                     }, scope : this
                 });
 
-                this.Cmp.id_moneda.store.load(
-                    {
-                        params:{start:0, limit:this.tam_pag},
-                        scope:this,
-                        callback: function (arr,op,suc) {
-                            this.Cmp.id_moneda.setValue(arr[1].data.id_moneda);
-                            if(arr[1].data.id_moneda == 'base'){
-                                this.cmpTipoCambioConv.disable();
-                                this.cmpTipoCambioConv.setValue(1);
-
-                            }
-                            else{
-                                this.cmpTipoCambioConv.enable()
-                                this.obtenerTipoCambio();
-                            }
-                        }
-                    }
-                );
-
 
             }, this);
 
@@ -947,7 +927,7 @@ header("content-type: text/javascript; charset=UTF-8");
             this.cmpFuncionario.disable();
             this.cmpFecha.setValue(new Date());
             this.cmpFecha.fireEvent('change')
-            this.cmpTipoObligacion.setValue('pce');
+            this.cmpTipoObligacion.setValue('pbr');
 
             this.Cmp.tipo_anticipo.setValue('no');
             this.Cmp.pago_variable.setValue('no');
@@ -982,12 +962,12 @@ header("content-type: text/javascript; charset=UTF-8");
             if(this.evaluaRequistos()){
 
                 if( k > 0 &&  !this.editorDetail.isVisible()){
-                    Phx.vista.FormPagoCompraExterior.superclass.onSubmit.call(this,o,undefined, true);
+                    Phx.vista.FormPagoBoaRep.superclass.onSubmit.call(this,o,undefined, true);
                 }
                 else{
                     if(confirm("No tiene ningun concepto  para comprar. ¿Desea continuar?")){
 
-                        Phx.vista.FormPagoCompraExterior.superclass.onSubmit.call(this,o);
+                        Phx.vista.FormPagoBoaRep.superclass.onSubmit.call(this,o);
                     }
 
                 }

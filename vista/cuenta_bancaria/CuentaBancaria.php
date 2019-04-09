@@ -317,7 +317,25 @@ Phx.vista.CuentaBancaria=Ext.extend(Phx.gridInterfaz,{
        			id_grupo:0,
        			grid:false,
        			form:true
-       	}
+       	},
+        {
+            config:{
+                name: 'forma_pago',
+                fieldLabel: 'Forma de Pago',
+                gwidth: 100,
+                maxLength:30,
+                items: [
+                    {boxLabel: 'Cheque',name: 'fp-auto',  inputValue: 'cheque', checked:true},
+                    {boxLabel: 'Transferencia',name: 'fp-auto', inputValue: 'transferencia'}
+                    //,{boxLabel: 'Caja',name: 'fp-auto', inputValue: 'Caja'}
+                ]
+            },
+            type:'RadioGroupField',
+            filters:{pfiltro:'ctaban.forma_pago',type:'string'},
+            id_grupo:1,
+            grid:true,
+            form:true
+        }
 	],
 	
 	title:'Cuenta Bancaria',
@@ -340,9 +358,11 @@ Phx.vista.CuentaBancaria=Ext.extend(Phx.gridInterfaz,{
 		{name:'fecha_mod', type: 'date',dateFormat:'Y-m-d H:i:s.u'},
 		{name:'id_usuario_mod', type: 'numeric'},
 		{name:'usr_reg', type: 'string'},
-		{name:'usr_mod', type: 'string'},'id_moneda','codigo_moneda','id_finalidads'
+		{name:'usr_mod', type: 'string'},'id_moneda','codigo_moneda','id_finalidads',
+        {name:'forma_pago', type: 'string'}
 		
 	],
+    arrayDefaultColumHidden:['forma_pago'],
 				
 	sortInfo:{
 		field: 'id_cuenta_bancaria',

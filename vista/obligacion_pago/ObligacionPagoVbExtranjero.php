@@ -92,8 +92,17 @@ header("content-type: text/javascript; charset=UTF-8");
             Phx.vista.ObligacionPagoVbExtranjero.superclass.constructor.call(this,config);
 
             this.cmbGestion.on('select', this.capturarEventos, this);
-            this.addButton('obs_presu',{grupo:[0,1,2],text:'Obs. Presupuestos', disabled:true, handler: this.initObs, tooltip: '<b>Observacioens del área de presupuesto</b>'});
             this.crearFormObs();
+            //this.addBotonesPresupuestos();
+            this.addButton('obs_presu',{
+                grupo:[0,1,2],
+                iconCls: 'bedit',
+                text:'Inf. Presu.',
+                disabled:true,
+                handler: this.initObs,
+                tooltip: '<b>Observacioens del área de presupuesto</b>'
+            });
+
 
             this.store.baseParams.pes_estado = 'pago_unico';
             this.store.baseParams.moneda_base = 'extranjero';
@@ -101,6 +110,34 @@ header("content-type: text/javascript; charset=UTF-8");
             this.finCons = true;
 
         },
+
+        /*addBotonesPresupuestos: function () {
+            this.menuPres = new Ext.Toolbar.SplitButton({
+                text: 'Presupuesto',
+                disabled: true,
+                grupo: [0, 1, 2],
+                iconCls: 'bedit',
+                handler: this.initObs,
+                scope: this,
+                menu: {
+                    items: [{
+                        id: 'fecha_presu',
+                        text: 'Gantt Imagen',
+                        tooltip: '<b>Muestra formulario para fecha Certificación Presupuestaria</b>',
+                        handler: this.initObs,
+                        scope: this
+                    }, {
+                        id: 'obs_presu',
+                        text: 'Obs. Pres.',
+                        tooltip: '<b>Observacioens del área de presupuesto</b>',
+                        handler: this.initObs,
+                        scope: this
+                    }
+                    ]
+                }
+            });
+            this.tbar.add(this.menuPres);
+        },*/
         cmbGestion: new Ext.form.ComboBox({
             name: 'gestion',
             fieldLabel: 'Gestion',
@@ -216,23 +253,33 @@ header("content-type: text/javascript; charset=UTF-8");
                 border: false,
                 layout: 'form',
                 autoHeight: true,
+                labelAlign: 'top',
                 items: [
+                    {
+                        name: 'fecha_certificacion',
+                        xtype: 'datefield',
+                        fieldLabel: 'Fecha Certificación Presupuestaria',
+                        allowBlank: true,
+                        anchor: '50%',
+                        msgTarget: 'side'
+                    },
                     {
                         name: 'obs',
                         xtype: 'textarea',
                         fieldLabel: 'Obs',
                         grow: true,
-                        growMin : '80%',
+                        growMin : '60%',
                         allowBlank: true,
                         value:'',
-                        anchor: '80%',
+                        anchor: '100%',
                         maxLength:500
-                    }]
+                    }
+                ]
             });
 
 
             this.wObs = new Ext.Window({
-                title: 'Obs de Presupuestos ... ',
+                title: 'Información Presupuestos',
                 collapsible: true,
                 maximizable: true,
                 autoDestroy: true,
@@ -259,11 +306,19 @@ header("content-type: text/javascript; charset=UTF-8");
             });
 
             this.cmbObsPres = this.formObs.getForm().findField('obs');
+            this.cmbFechaPres = this.formObs.getForm().findField('fecha_certificacion');
         },
 
         initObs:function(){
             var d= this.sm.getSelected().data;
             this.cmbObsPres.setValue(d.obs_presupuestos);
+            if(d.tipo_obligacion == 'pbr'){
+                this.cmbFechaPres.setVisible(true);
+                this.cmbFechaPres.setValue(d.fecha_certificacion_pres);
+            }else{
+                this.cmbFechaPres.setVisible(false);
+            }
+
             this.wObs.show()
         },
 
@@ -274,7 +329,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 url: '../../sis_tesoreria/control/ObligacionPago/modificarObsPresupuestos',
                 params: {
                     id_obligacion_pago: d.id_obligacion_pago,
-                    obs: this.cmbObsPres.getValue()
+                    obs: this.cmbObsPres.getValue(),
+                    fecha_cer_pres: this.cmbFechaPres.getValue()
                 },
                 success: function(resp){
                     Phx.CP.loadingHide();

@@ -14,6 +14,7 @@ require_once(dirname(__FILE__).'/../../pxp/pxpReport/DataSource.php');
 include_once(dirname(__FILE__).'/../../lib/PHPMailer/class.phpmailer.php');
 include_once(dirname(__FILE__).'/../../lib/PHPMailer/class.smtp.php');
 include_once(dirname(__FILE__).'/../../lib/lib_general/cls_correo_externo.php');
+include_once(dirname(__FILE__).'/../reportes/RConciliacionBancariaXLS.php');
 
 
 class ACTTsLibroBancos extends ACTbase{    
@@ -501,6 +502,46 @@ class ACTTsLibroBancos extends ACTbase{
 		   exit;
 	   
     }
+	function ConciliacionBancaria(){        
+        $this->objFunc = $this->create('MODTsLibroBancos');
+        $this->res = $this->objFunc->ConciliacionBancaria($this->objParam);
+		//$this->res->imprimirRespuesta($this->res->generarJson());
+       
+        /*if($this->objParam->getParametro('tipo')=='pdf'){
+            $nombreArchivo = uniqid(md5(session_id()).'[ConciliacionBancaria AF]').'.pdf';
+        }
+        else{*/
+            $nombreArchivo = uniqid(md5(session_id()).'[ConciliacionBancaria AF]').'.xls';
+        //}
+
+        $this->objParam->addParametro('orientacion','L');
+        $this->objParam->addParametro('tamano','LETTER');
+        $this->objParam->addParametro('nombre_archivo',$nombreArchivo);
+        $this->objParam->addParametro('titulo_archivo','Conciliacion Bancaria');
+
+
+        /*if($this->objParam->getParametro('tipo')=='pdf'){
+        	
+		        $this->objReporteFormato=new RDepreciacionActulizadoPDF ($this->objParam);
+		        $this->objReporteFormato->setDatos($this->res->datos);
+		        $this->objReporteFormato->generarReporte();
+		        $this->objReporteFormato->output($this->objReporteFormato->url_archivo,'F');        		
+        }
+        else{*/
+
+            $reporte = new RConciliacionBancariaXLS($this->objParam);
+            //$reporte->setDatos();
+            $reporte->generarReporte();
+       // }
+
+        $this->mensajeExito=new Mensaje();
+        $this->mensajeExito->setMensaje('EXITO','Reporte.php','Reporte generado',
+            'Se generó con éxito el reporte: '.$nombreArchivo,'control');
+        $this->mensajeExito->setArchivoGenerado($nombreArchivo);
+        $this->mensajeExito->imprimirRespuesta($this->mensajeExito->generarJson());	
+		
+	}
+    
 	
 }
 

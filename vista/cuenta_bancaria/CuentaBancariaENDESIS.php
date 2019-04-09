@@ -28,7 +28,15 @@ header("content-type:text/javascript; charset=UTF-8");
 				iconCls : 'bmoney',
 				disabled : true,
 				handler : this.onBtnDepositosCheques,
-				tooltip : '<b>Despositos y cheques</b>'
+				tooltip : '<b>Depositos y cheques</b>'
+			});
+			
+			this.addButton('btnConciliacionBancaria',{
+					text: 'Conciliacion Bancaria',
+					iconCls : 'bdocuments',
+					disabled : true,
+					handler: this.onBtnConciliacionBancaria,
+					tooltip: '<b>Conciliacion Bancaria</b>'
 			});
 		},
 		
@@ -74,6 +82,14 @@ header("content-type:text/javascript; charset=UTF-8");
 				width : '95%',
 				height : '95%',
 			}, rec.data, this.idContenedor, 'TsLibroBancosDeposito');
+		},
+		onBtnConciliacionBancaria: function () {
+			var rec = this.sm.getSelected();
+			Phx.CP.loadWindows('../../../sis_tesoreria/vista/conciliacion_bancaria/ConciliacionBancaria.php', 'Conciliacion Bancaria', {
+				modal : true,
+				width : '80%',
+				height : '80%',
+			}, rec.data, this.idContenedor, 'ConciliacionBancaria');
 		},
 		
 		Atributos : [{
@@ -325,8 +341,10 @@ header("content-type:text/javascript; charset=UTF-8");
 			
 			if (data['id_moneda']==null){
 				this.getBoton('btnDepositosCheques').disable();
+				this.getBoton('btnConciliacionBancaria').disable();
 			  }else{
 				this.getBoton('btnDepositosCheques').enable();
+				this.getBoton('btnConciliacionBancaria').enable();
 			  }
 		},
 		/*

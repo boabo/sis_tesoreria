@@ -5486,6 +5486,54 @@ select wf.f_import_ttipo_proceso_origen ('insert','LBTRANS','LIB-BAN','CBTE','va
 
 /***********************************F-DEP-FEA-TES-0-27/11/2018****************************************/
 
-
+/***********************************I-DEP-MAY-TES-0-10/12/2018****************************************/
+CREATE OR REPLACE VIEW tes.vobligacion_pp_prorrateo (
+    desc_proveedor,
+    ult_est_pp,
+    num_tramite,
+    nro_cuota,
+    estado_pp,
+    tipo_cuota,
+    nro_cbte,
+    c31,
+    monto_ejecutar_mo,
+    ret_garantia,
+    liq_pagable,
+    desc_ingas,
+    codigo_cc,
+    partida,
+    codigo_categoria,
+    fecha)
+AS
+ SELECT pv.desc_proveedor,
+    op.ultimo_estado_pp AS ult_est_pp,
+    op.num_tramite,
+    pp.nro_cuota,
+    pp.estado AS estado_pp,
+    pp.tipo AS tipo_cuota,
+    tcon.nro_cbte,
+    tcon.c31,
+    pro.monto_ejecutar_mo,
+    pro.monto_ejecutar_mo * 0.07 AS ret_garantia,
+    pro.monto_ejecutar_mo * 0.93 AS liq_pagable,
+    cig.desc_ingas,
+    cc.codigo_cc,
+    (par.codigo::text || '-'::text) || par.nombre_partida::text AS partida,
+    vcp.codigo_categoria,
+    op.fecha
+   FROM tes.tobligacion_pago op
+     LEFT JOIN tes.tobligacion_det obd ON obd.id_obligacion_pago = op.id_obligacion_pago
+     JOIN tes.tplan_pago pp ON pp.id_obligacion_pago = op.id_obligacion_pago
+     JOIN tes.tprorrateo pro ON pro.id_plan_pago = pp.id_plan_pago AND pro.id_obligacion_det = obd.id_obligacion_det
+     JOIN conta.tint_comprobante tcon ON tcon.id_int_comprobante = pp.id_int_comprobante
+     JOIN param.tconcepto_ingas cig ON cig.id_concepto_ingas = obd.id_concepto_ingas
+     JOIN param.vcentro_costo cc ON cc.id_centro_costo = obd.id_centro_costo
+     JOIN pre.tpartida par ON par.id_partida = obd.id_partida
+     JOIN param.vproveedor pv ON pv.id_proveedor = op.id_proveedor
+     JOIN pre.tpresupuesto pre ON pre.id_centro_costo = cc.id_centro_costo
+     JOIN pre.vcategoria_programatica vcp ON vcp.id_categoria_programatica = pre.id_categoria_prog
+  WHERE pp.estado::text = 'pagado'::text
+  ORDER BY cc.codigo_cc, pv.desc_proveedor;
+/***********************************F-DEP-MAY-TES-0-10/12/2018****************************************/
 
 

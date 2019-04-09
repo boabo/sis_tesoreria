@@ -114,12 +114,12 @@ header("content-type: text/javascript; charset=UTF-8");
 
             //RCM: reporte de verificacion presupeustaria
             this.addButton('btnCheckPresupeusto', {
-                text: 'Rev. Pres.',
+                text: 'Rev./Incr. Pres.',
                 grupo: [0, 1, 2],
                 iconCls: 'bassign',
                 disabled: false,
                 handler: this.onBtnCheckPresup,
-                tooltip: '<b>Revertir  presupuestos,  permite ver la evolucón presupuestaria y revertir parcialmente</b>'
+                tooltip: '<b>Revertir/Incrementar  presupuestos,  permite ver la evolucón presupuestaria y revertir parcialmente</b>'
             });
 
             //this.addButton('diagrama_gantt',{grupo:[0,1,2],text:'Gant', iconCls: 'bgantt', disabled:true, handler:diagramGantt,tooltip: '<b>Diagrama Gantt de proceso macro</b>'});
@@ -407,19 +407,56 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config: {
                     name: 'id_proveedor',
+                    hiddenName: 'id_proveedor',
                     fieldLabel: 'Proveedor',
-                    anchor: '80%',
-                    tinit: false,
+                    // typeAhead: false,
+                    forceSelection: true,
                     allowBlank: false,
-                    origen: 'PROVEEDOR',
-                    gdisplayField: 'desc_proveedor',
+                    // disabled: true,
+                    emptyText: 'Proveedor...',
+                    store: new Ext.data.JsonStore({
+                        url:'../../sis_parametros/control/Proveedor/listarProveedorCombos',
+                        id: 'id_proveedor',
+                        root: 'datos',
+                        sortInfo:{
+                            field: 'rotulo_comercial',
+                            direction: 'ASC'
+                        },
+                        totalProperty: 'total',
+                        fields: ['id_proveedor','desc_proveedor','codigo','nit','rotulo_comercial','lugar','email'],
+                        // turn on remote sorting
+                        remoteSort: true,
+                        baseParams:Ext.apply({par_filtro:'desc_proveedor#codigo#nit#rotulo_comercial'})
+
+                    }),
+                    valueField: 'id_proveedor',
+                    displayField: 'desc_proveedor',
+                    // gdisplayField: 'desc_contrato',
+                    triggerAction: 'all',
+                    lazyRender: true,
+                    resizable: true,
+                    mode: 'remote',
+                    pageSize: 10,
+                    queryDelay: 1000,
+                    listWidth: 280,
+                    minChars: 2,
                     gwidth: 100,
-                    listWidth: '280',
-                    resizable: true
+                    anchor: '80%',
+                    renderer: function (value, p, record) {
+                        if (record.data['desc_proveedor']) {
+                            return String.format('{0}', record.data['desc_proveedor']);
+                        }
+                        return '';
+
+                    },
+                    tpl: '<tpl for="."><div class="x-combo-list-item"><p><b>{rotulo_comercial}</b></p><p>{desc_proveedor}</p><p>{codigo}</p><p>NIT:{nit}</p><p>Lugar:{lugar}</p><p>Email: {email}</p></div></tpl>',
                 },
-                type: 'ComboRec',
-                id_grupo: 1,
-                filters: {pfiltro: 'pv.desc_proveedor', type: 'string'},
+                type: 'ComboBox',
+                id_grupo: 0,
+                filters: {
+                    pfiltro: 'pv.desc_proveedor',
+                    type: 'string'
+                },
                 bottom_filter: true,
                 grid: true,
                 form: true
@@ -443,11 +480,11 @@ header("content-type: text/javascript; charset=UTF-8");
                             direction: 'ASC'
                         },
                         totalProperty: 'total',
-                        fields: ['id_contrato', 'numero', 'tipo', 'objeto', 'estado', 'desc_proveedor', 'monto', 'moneda', 'fecha_inicio', 'fecha_fin'],
+                        fields: ['id_contrato','nro_tramite', 'numero', 'tipo', 'objeto', 'estado', 'desc_proveedor', 'monto', 'moneda', 'fecha_inicio', 'fecha_fin'],
                         // turn on remote sorting
                         remoteSort: true,
                         baseParams: {
-                            par_filtro: 'con.numero#con.tipo#con.monto#prov.desc_proveedor#con.objeto#con.monto',
+                            par_filtro: 'con.nro_tramite#con.numero#con.tipo#con.monto#prov.desc_proveedor#con.objeto#con.monto',
                             tipo_proceso: "CON",
                             tipo_estado: "finalizado"
                         }
@@ -472,7 +509,7 @@ header("content-type: text/javascript; charset=UTF-8");
                         return '';
 
                     },
-                    tpl: '<tpl for="."><div class="x-combo-list-item"><p>Nro: {numero} ({tipo})</p><p>Obj: <strong>{objeto}</strong></p><p>Prov : {desc_proveedor}</p> <p>Monto: {monto} {moneda}</p><p>Rango: {fecha_inicio} al {fecha_fin}</p></div></tpl>'
+                    tpl: '<tpl for="."><div class="x-combo-list-item"><p><b>Nro: {numero} ({tipo})</b></p><p>Obj: <strong>{objeto}</strong></p><p>Prov : {desc_proveedor}</p> <p>Nro.Trámite: {nro_tramite}</p><p>Monto: {monto} {moneda}</p><p>Rango: {fecha_inicio} al {fecha_fin}</p></div></tpl>'
                 },
                 type: 'ComboBox',
                 id_grupo: 0,
@@ -501,20 +538,60 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config: {
                     name: 'id_moneda',
+                    hiddenName: 'id_moneda',
                     fieldLabel: 'Moneda',
-                    anchor: '80%',
-                    tinit: false,
+                    // typeAhead: false,
+                    forceSelection: true,
                     allowBlank: false,
-                    origen: 'MONEDA',
-                    gdisplayField: 'moneda',
+                    // disabled: true,
+                    emptyText: 'Moneda...',
+                    store: new Ext.data.JsonStore({
+                        url:'../../sis_parametros/control/Moneda/listarMoneda',
+                        id: 'id_moneda',
+                        root: 'datos',
+                        sortInfo:{
+                            field: 'moneda',
+                            direction: 'ASC'
+                        },
+                        totalProperty: 'total',
+                        fields: ['id_moneda','moneda','codigo','tipo_moneda','codigo_internacional'],
+                        // turn on remote sorting
+                        remoteSort: true,
+                        baseParams:Ext.apply({par_filtro:'moneda#codigo',filtrar:'si'})
+
+                    }),
+                    valueField: 'id_moneda',
+                    displayField: 'moneda',
+                     // gdisplayField: 'desc_contrato',
+                    triggerAction: 'all',
+                    lazyRender: true,
+                    resizable: true,
+                    mode: 'remote',
+                    pageSize: 10,
+                    queryDelay: 1000,
+                    listWidth: 280,
+                    minChars: 2,
                     gwidth: 100,
+                    anchor: '80%',
+                    renderer: function (value, p, record) {
+                        if (record.data['moneda']) {
+                            return String.format('{0}', record.data['moneda']);
+                        }
+                        return '';
+
+                    },
+                    tpl: '<tpl for="."><div class="x-combo-list-item"><p><b>Moneda:{moneda}</b></p><p>Codigo:{codigo}</p> <p>Codigo Internacional:{codigo_internacional}</p></div></tpl>',
                 },
-                type: 'ComboRec',
-                id_grupo: 1,
-                filters: {pfiltro: 'mn.moneda', type: 'string'},
+                type: 'ComboBox',
+                id_grupo: 0,
+                filters: {
+                    pfiltro: 'mn.moneda',
+                    type: 'string'
+                },
                 grid: true,
                 form: true
-            }, {
+            },
+            {
                 config: {
                     name: 'pago_variable',
                     fieldLabel: 'Pago Variable',
@@ -610,16 +687,17 @@ header("content-type: text/javascript; charset=UTF-8");
             {
                 config: {
                     name: 'obs',
-                    fieldLabel: 'Desc',
+                    fieldLabel: 'Justificación',
                     allowBlank: false,
                     qtip: 'Descripcion del objetivo del pago, o Si el proveedor es PASAJEROS PERJUDICADOS aqui va el nombre del pasajero',
                     anchor: '80%',
-                    gwidth: 100,
+                    gwidth: 250,
                     maxLength: 1000
                 },
                 type: 'TextArea',
                 filters: {pfiltro: 'obpg.obs', type: 'string'},
                 id_grupo: 1,
+                bottom_filter: true,
                 grid: true,
                 form: true
             },
@@ -897,7 +975,8 @@ header("content-type: text/javascript; charset=UTF-8");
             {name: 'fecha_conformidad_final', type: 'date', dateFormat: 'Y-m-d'},
             {name: 'fecha_inicio', type: 'date', dateFormat: 'Y-m-d'},
             {name: 'fecha_fin', type: 'date', dateFormat: 'Y-m-d'},
-            {name: 'observaciones', type: 'string'}
+            {name: 'observaciones', type: 'string'},
+            {name: 'fecha_certificacion_pres', type: 'date', dateFormat: 'Y-m-d'}
 
         ],
 
@@ -1613,11 +1692,12 @@ header("content-type: text/javascript; charset=UTF-8");
         addBotones: function () {
             this.menuAdq = new Ext.Toolbar.SplitButton({
                 id: 'btn-adq-' + this.idContenedor,
-                text: 'Orden de Compra',
+                text: 'Orden Compra',
                 grupo: [0, 1, 2],
                 handler: this.onBtnAdq,
                 disabled: true,
                 scope: this,
+                iconCls: 'bcharge',
                 menu: {
                     items: [{
                         id: 'btn-cot-' + this.idContenedor,
@@ -1939,43 +2019,52 @@ header("content-type: text/javascript; charset=UTF-8");
                             scope: this
                         });
                 }
-            } else {
-
-                this.objWizard = Phx.CP.loadWindows('../../../sis_workflow/vista/estado_wf/FormEstadoWf.php',
-                    'Estado de Wf',
-                    {
-                        modal: true,
-                        width: 700,
-                        height: 450
-                    }, {
-                        configExtra: configExtra,
-                        data: {
-                            id_estado_wf: rec.data.id_estado_wf,
-                            id_proceso_wf: rec.data.id_proceso_wf,
-                            id_obligacion_pago: rec.data.id_obligacion_pago,
-                            fecha_ini: rec.data.fecha_tentativa
-
-                        },
-                        obsValorInicial: obsValorInicial,
-                    }, this.idContenedor, 'FormEstadoWf',
-                    {
-                        config: [{
-                            event: 'beforesave',
-                            delegate: this.onSaveWizard,
-
-                        },
-                            {
-                                event: 'requirefields',
-                                delegate: function () {
-                                    this.onButtonEdit();
-                                    this.window.setTitle('Registre los campos antes de pasar al siguiente estado');
-                                    this.formulario_wizard = 'si';
-                                }
-
-                            }],
-
-                        scope: this
+            }else{
+                if (rec.data.tipo_obligacion == 'pbr' && rec.data.estado == 'vbpresupuestos' && (rec.data.fecha_certificacion_pres == '' || rec.data.fecha_certificacion_pres == null)){
+                    Ext.Msg.show({
+                        title: 'Información',
+                        msg: '<b>Estimado usuario:</b><br>No puede pasar al siguiente estado porque no ha definido la fecha de Certificación Presupuestaria.',
+                        buttons: Ext.Msg.OK,
+                        width: 512,
+                        icon: Ext.Msg.INFO
                     });
+                }else {
+                    this.objWizard = Phx.CP.loadWindows('../../../sis_workflow/vista/estado_wf/FormEstadoWf.php',
+                        'Estado de Wf',
+                        {
+                            modal: true,
+                            width: 700,
+                            height: 450
+                        }, {
+                            configExtra: configExtra,
+                            data: {
+                                id_estado_wf: rec.data.id_estado_wf,
+                                id_proceso_wf: rec.data.id_proceso_wf,
+                                id_obligacion_pago: rec.data.id_obligacion_pago,
+                                fecha_ini: rec.data.fecha_tentativa
+
+                            },
+                            obsValorInicial: obsValorInicial,
+                        }, this.idContenedor, 'FormEstadoWf',
+                        {
+                            config: [{
+                                event: 'beforesave',
+                                delegate: this.onSaveWizard,
+
+                            },
+                                {
+                                    event: 'requirefields',
+                                    delegate: function () {
+                                        this.onButtonEdit();
+                                        this.window.setTitle('Registre los campos antes de pasar al siguiente estado');
+                                        this.formulario_wizard = 'si';
+                                    }
+
+                                }],
+
+                            scope: this
+                        });
+                }
             }
         },
         onSaveWizard: function (wizard, resp) {

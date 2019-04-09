@@ -1,5 +1,3 @@
---------------- SQL ---------------
-
 CREATE OR REPLACE FUNCTION tes.f_inserta_solicitud_efectivo (
   p_administrador integer,
   p_id_usuario integer,
@@ -106,7 +104,7 @@ BEGIN
             	raise exception 'Tipo de solicitud '' % '', no definido', (p_hstore->'tipo_solicitud')::varchar;
 			END IF;
 
-            IF v_tipo IN ('SOLEFE','APECAJ','INGEFE') THEN
+            IF v_tipo IN ('SOLEFE','APECAJ','INGEFE', 'SALEFE') THEN
              
                 -- obtener correlativo
                 v_num_sol_efe =  param.f_obtener_correlativo(
@@ -131,7 +129,7 @@ BEGIN
               END IF;
               
             ELSE
-
+				
               select sol.nro_tramite, cajero.id_funcionario into v_num_sol_efe, v_id_cajero
               from tes.tsolicitud_efectivo sol
               inner join tes.tcajero cajero on cajero.id_caja=sol.id_caja and cajero.estado='activo'

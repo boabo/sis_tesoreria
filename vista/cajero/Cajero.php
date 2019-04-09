@@ -129,7 +129,7 @@ Phx.vista.Cajero=Ext.extend(Phx.gridInterfaz,{
 			    config:{
 				    name: 'fecha_fin',
 				    fieldLabel: 'Fecha fin',
-				    allowBlank: true,
+				    allowBlank: false,
 				    anchor: '80%',
 				    gwidth: 100,
 					format: 'd/m/Y', 

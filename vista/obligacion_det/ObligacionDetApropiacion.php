@@ -96,7 +96,10 @@ Phx.vista.ObligacionDetApropiacion = {
                    
                                 
             }, scope : this
-        });	
+        });
+
+        this.Cmp.monto_pago_mo.allowBlank = true;
+        this.Cmp.monto_pago_mo.disable();
 	}
      
     

@@ -162,6 +162,25 @@ DECLARE
     v_desc_persona				varchar;
     v_id_alarma					integer;
 
+    v_fecha_op					varchar;
+    v_anio_op					integer;
+    v_num_tramite				varchar;
+    v_anio_ges					integer;
+
+    v_sum_monto_pp				numeric;
+    v_sum_monto_pe				numeric;
+    v_sum_total_pp				numeric;
+    v_sum_monto_solo_pp			numeric;
+
+    v_forma_pago_cb				varchar;
+    v_nro_cuenta				varchar;
+
+    v_monto_establecido			numeric;
+    v_porcentaje13_monto		numeric;
+    v_codigo_tipo_relacion		varchar;
+
+
+
 BEGIN
 
     v_nombre_funcion = 'tes.f_plan_pago_ime';
@@ -183,13 +202,128 @@ BEGIN
                raise exception 'LA FECHA FINAL NO PUEDE SER MENOR A LA FECHA INICIAL';
             END IF;
 
-		/*	--validador de gestion
+            /*--control de fechas inicio y fin
+            select date_part('year',op.fecha), to_char(op.fecha,'DD/MM/YYYY')::varchar as fecha, op.num_tramite
+            into v_anio_op, v_fecha_op, v_num_tramite
+            from tes.tobligacion_pago op
+            join tes.tplan_pago pp on pp.id_obligacion_pago = op.id_obligacion_pago
+            where pp.id_obligacion_pago = v_parametros.id_obligacion_pago;
+
+            IF NOT ((date_part('year',v_parametros.fecha_costo_ini) = v_anio_op) and (date_part('year',v_parametros.fecha_costo_fin)=v_anio_op)) THEN
+               raise exception 'LAS FECHAS NO CORRESPONDEN A LA GESTIÓN, NÚMERO DE TRÁMITE % TIENE COMO FECHA %', v_num_tramite,v_fecha_op;
+            END IF;
+            */
+            --control de fechas inicio y fin que esten en el rango del la gestion del tramite
+            select date_part('year',op.fecha), to_char(op.fecha,'DD/MM/YYYY')::varchar as fecha, op.num_tramite, ges.gestion
+            into v_anio_op, v_fecha_op, v_num_tramite, v_anio_ges
+            from tes.tobligacion_pago op
+            join tes.tplan_pago pp on pp.id_obligacion_pago = op.id_obligacion_pago
+            join param.tgestion ges on ges.id_gestion = op.id_gestion
+            where pp.id_obligacion_pago = v_parametros.id_obligacion_pago;
+
+            IF NOT ((date_part('year',v_parametros.fecha_costo_ini) = v_anio_ges) and (date_part('year',v_parametros.fecha_costo_fin)=v_anio_ges)) THEN
+               raise exception 'LAS FECHAS NO CORRESPONDEN A LA GESTIÓN, NÚMERO DE TRÁMITE % gestión %', v_num_tramite, v_anio_ges;
+            END IF;
+
+
+            IF v_parametros.fecha_costo_ini is Null THEN
+            	raise EXCEPTION 'Debe completar la fecha inicio';
+            END IF;
+
+            IF v_parametros.fecha_costo_fin is Null THEN
+            	raise EXCEPTION 'Debe completar la fecha fin';
+            END IF;
+
+			/*--validador de gestion
 			v_anio_gestion = ( select date_part('year',now()))::INTEGER;
 
 			IF NOT ((date_part('year',v_parametros.fecha_costo_ini) = v_anio_gestion) and (date_part('year',v_parametros.fecha_costo_fin)=v_anio_gestion)) THEN
                raise exception 'LAS FECHAS NO CORRESPONDEN A LA GESTION ACTUAL';
             END IF;
-		*/
+			*/
+
+
+             --si es un pago variable, controla que el total del plan de pago no sea mayor a lo comprometido
+                       select
+
+                            op.num_tramite,
+                            op.id_proceso_wf,
+                            op.id_estado_wf,
+                            op.estado,
+                            op.id_depto,
+                            op.pago_variable
+                          into v_registros
+                           from tes.tobligacion_pago op
+                           where op.id_obligacion_pago = v_parametros.id_obligacion_pago;
+
+                        select
+                            pp.monto,
+                            pp.estado,
+                            pp.tipo,
+                            pp.id_plan_pago_fk,
+                            pp.porc_monto_retgar,
+                            pp.descuento_anticipo,
+                            pp.monto_ejecutar_total_mo,
+                            pp.monto_anticipo
+                           into
+                             v_registros_pp
+                           from tes.tplan_pago pp
+                           where pp.estado_reg='activo'
+                           and pp.id_obligacion_pago = v_parametros.id_obligacion_pago;
+
+                           SELECT pc.codigo_tipo_relacion
+                           INTO v_codigo_tipo_relacion
+                           FROM param.tplantilla p
+                           inner join conta.tplantilla_calculo pc on pc.id_plantilla = p.id_plantilla
+                           WHERE p.id_plantilla = v_parametros.id_plantilla;
+
+                           --SELECT sum(pp.monto)
+                            SELECT sum(pp.monto_establecido)
+                            INTO v_sum_monto_pp
+                            FROM tes.tplan_pago pp
+                            WHERE pp.estado != 'anulado' and pp.estado != 'pago_exterior' and pp.estado != 'pagado'
+                            and pp.id_obligacion_pago = v_parametros.id_obligacion_pago;
+
+                            SELECT sum(pe.monto)
+                            INTO v_sum_monto_pe
+                            FROM pre.tpartida_ejecucion pe
+                            join tes.tobligacion_pago opa on opa.num_tramite = pe.nro_tramite
+                            WHERE pe.tipo_movimiento = 'comprometido'
+                            and opa.id_obligacion_pago = v_parametros.id_obligacion_pago;
+
+                      IF v_registros.pago_variable='si' or v_registros.pago_variable='no' THEN
+                      	--para los que se descuentan el IVA 13%
+						IF (v_codigo_tipo_relacion = 'IVA-CF') THEN
+
+                            v_porcentaje13_monto = COALESCE(v_parametros.monto * 0.13, 0);
+          					v_monto_establecido  = COALESCE(v_parametros.monto, 0) - v_porcentaje13_monto;
+
+                            v_sum_total_pp = COALESCE(v_sum_monto_pp,0) + COALESCE(v_monto_establecido, 0);
+
+                           --raise exception 'llegaaaa %>= %', v_sum_total_pp,v_sum_monto_pe ;
+                            IF (v_sum_total_pp > v_sum_monto_pe) THEN
+                              raise exception ' El monto total de las cuotas es de % y excede al monto total certificado de % para el trámite %. Comunicarse con la Unidad de Presupuestos. ',v_sum_total_pp, v_sum_monto_pe, v_registros.num_tramite ;
+                            END IF;
+
+						ELSE
+
+                            v_sum_total_pp = COALESCE(v_sum_monto_pp, 0) + COALESCE(v_parametros.monto, 0);
+
+                           --raise exception 'llegaaaa %>= %', v_sum_total_pp,v_sum_monto_pe ;
+                            IF (v_sum_total_pp > v_sum_monto_pe) THEN
+                              raise exception ' El monto total de las cuotas es de % y excede al monto total certificado de % para el trámite %. Comunicarse con la Unidad de Presupuestos. ',v_sum_total_pp, v_sum_monto_pe, v_registros.num_tramite ;
+                            END IF;
+                      END IF;
+                            v_sum_total_pp = COALESCE(v_parametros.monto,0);
+
+                            IF (v_sum_total_pp > v_sum_monto_pe) THEN
+                              raise exception ' El monto total de las cuotas es de % y excede al monto total certificado de % para el trámite %. Comunicarse con la Unidad de Presupuestos. ',v_sum_total_pp, v_sum_monto_pe, v_registros.num_tramite ;
+                            END IF;
+
+
+
+                      END IF;
+                 ----
 
         	select tipo_obligacion into v_tipo_obligacion
             from tes.tobligacion_pago
@@ -401,7 +535,7 @@ BEGIN
                      IF v_registros.pago_variable='no' THEN
                         v_monto_total = tes.f_determinar_total_faltante(v_parametros.id_obligacion_pago, 'registrado');
                         IF (v_monto_total + v_registros_pp.monto)  <  v_parametros.monto  THEN
-                          raise exception 'No puede exceder el total a pagar en obligaciones no variables';
+                          raise exception 'No puede exceder el total a pagar en obligaciones no variables.';
                         END IF;
 
                         --   si es  un pago no variable  (si es una cuota de devengao_pagado, devegando_pagado_1c, pagado)
@@ -454,8 +588,82 @@ BEGIN
                      END IF;
 
 
-               END IF;
+                      --si es un pago variable, controla que el total del plan de pago no sea mayor a lo comprometido
+                      		--SELECT sum(pp.monto_ejecutar_total_mo)
+                            SELECT sum(pp.monto_establecido)
+                            INTO v_sum_monto_pp
+                            FROM tes.tplan_pago pp
+                            WHERE pp.estado != 'anulado' and pp.estado != 'pago_exterior' and pp.estado != 'pagado'
+                            and pp.id_obligacion_pago = v_parametros.id_obligacion_pago;
 
+                            --SELECT pp.monto_ejecutar_total_mo
+                            SELECT pp.monto_establecido
+                            INTO v_sum_monto_solo_pp
+                            FROM tes.tplan_pago pp
+                            WHERE pp.id_plan_pago= v_parametros.id_plan_pago;
+
+                            SELECT sum(pe.monto)
+                            INTO v_sum_monto_pe
+                            FROM pre.tpartida_ejecucion pe
+                            join tes.tobligacion_pago opa on opa.num_tramite = pe.nro_tramite
+                            WHERE pe.tipo_movimiento = 'comprometido'
+                            and opa.id_obligacion_pago = v_parametros.id_obligacion_pago;
+
+
+
+
+                      IF v_registros.pago_variable='si' or v_registros.pago_variable='no' THEN
+
+                        SELECT pc.codigo_tipo_relacion
+                        INTO v_codigo_tipo_relacion
+                        FROM param.tplantilla p
+                        inner join conta.tplantilla_calculo pc on pc.id_plantilla = p.id_plantilla
+                        WHERE  pc.codigo_tipo_relacion = 'IVA-CF'
+                        and p.id_plantilla = v_parametros.id_plantilla;
+
+
+                      	--para los que se descuentan el IVA 13%
+						IF (v_codigo_tipo_relacion = 'IVA-CF') THEN
+
+                            v_porcentaje13_monto = COALESCE(v_parametros.monto * 0.13, 0);
+          					v_monto_establecido  = COALESCE(v_parametros.monto, 0) - v_porcentaje13_monto;
+
+                            --v_sum_total_pp = (v_sum_monto_pp - v_sum_monto_solo_pp) + v_parametros.monto;
+                            v_sum_total_pp = (v_sum_monto_pp - v_sum_monto_solo_pp) + v_monto_establecido;
+                         --raise exception '% = % - % + %',v_sum_total_pp,  v_sum_monto_pp, v_sum_monto_solo_pp, v_parametros.monto;
+
+                           IF ((v_sum_total_pp) > v_sum_monto_pe) THEN
+                              raise exception ' El monto total de las cuotas es de % y excede al monto total certificado de % para el trámite %. Comunicarse con la Unidad de Presupuestos. ',v_sum_total_pp, v_sum_monto_pe, v_registros.num_tramite ;
+                           END IF;
+
+                       ELSE
+
+                      	 v_monto_establecido  = COALESCE(v_parametros.monto);
+                         v_sum_total_pp = (COALESCE(v_sum_monto_pp,0) - COALESCE(v_sum_monto_solo_pp, 0)) + COALESCE(v_parametros.monto, 0);
+                         --raise exception '% = % - % + %',v_sum_total_pp,  v_sum_monto_pp, v_sum_monto_solo_pp, v_parametros.monto;
+
+                           IF ((v_sum_total_pp) > v_sum_monto_pe) THEN
+                              raise exception ' El monto total de las cuotas es de % y excede al monto total certificado de % para el trámite %. Comunicarse con la Unidad de Presupuestos. ',v_sum_total_pp, v_sum_monto_pe, v_registros.num_tramite ;
+                           END IF;
+                       END IF;
+
+
+                     END IF;
+                   --
+                    --valida si forma_pago es igual a forma_pago cuenta bancaria
+                   	  IF v_id_cuenta_bancaria is Not NULL THEN
+                        select cb.forma_pago, cb.nro_cuenta
+                        into v_forma_pago_cb, v_nro_cuenta
+                        from tes.tcuenta_bancaria cb
+                        where cb.id_cuenta_bancaria = v_parametros.id_cuenta_bancaria;
+
+                        IF (v_forma_pago_cb != v_parametros.forma_pago) then
+                              raise exception 'Modificar la Forma de Pago, este pertenece como  %  para la Cuenta Bancaria %', UPPER(v_forma_pago_cb), v_nro_cuenta;
+                        END IF;
+                      END IF;
+                    --
+
+               END IF;
 
 
            -------------------------------------------------------------
@@ -694,10 +902,33 @@ BEGIN
             monto_ajuste_ag = v_parametros.monto_ajuste_ag,
             monto_anticipo = v_monto_anticipo,
             fecha_costo_ini = v_parametros.fecha_costo_ini,
-            fecha_costo_fin = v_parametros.fecha_costo_fin/*,
-            es_ultima_cuota = v_parametros.es_ultima_cuota*/
+            fecha_costo_fin = v_parametros.fecha_costo_fin,
+            /*es_ultima_cuota = v_parametros.es_ultima_cuota*/
+            monto_establecido =v_monto_establecido
             where id_plan_pago = v_parametros.id_plan_pago;
 
+            /*--control de fechas inicio y fin
+            select date_part('year',op.fecha), to_char(op.fecha,'DD/MM/YYYY')::varchar as fecha, op.num_tramite
+            into v_anio_op, v_fecha_op, v_num_tramite
+            from tes.tobligacion_pago op
+            join tes.tplan_pago pp on pp.id_obligacion_pago = op.id_obligacion_pago
+            where pp.id_obligacion_pago = v_parametros.id_obligacion_pago;
+
+            IF NOT ((date_part('year',v_parametros.fecha_costo_ini) = v_anio_op) and (date_part('year',v_parametros.fecha_costo_fin)=v_anio_op)) THEN
+               raise exception 'LAS FECHAS NO CORRESPONDEN A LA GESTIÓN, NÚMERO DE TRÁMITE % TIENE COMO FECHA %', v_num_tramite,v_fecha_op;
+            END IF;
+			*/
+            --control de fechas inicio y fin que esten en el rango del la gestion del tramite
+            select date_part('year',op.fecha), to_char(op.fecha,'DD/MM/YYYY')::varchar as fecha, op.num_tramite, ges.gestion
+            into v_anio_op, v_fecha_op, v_num_tramite, v_anio_ges
+            from tes.tobligacion_pago op
+            join tes.tplan_pago pp on pp.id_obligacion_pago = op.id_obligacion_pago
+            join param.tgestion ges on ges.id_gestion = op.id_gestion
+            where pp.id_obligacion_pago = v_parametros.id_obligacion_pago;
+
+            IF NOT ((date_part('year',v_parametros.fecha_costo_ini) = v_anio_ges) and (date_part('year',v_parametros.fecha_costo_fin)=v_anio_ges)) THEN
+               raise exception 'LAS FECHAS NO CORRESPONDEN A LA GESTIÓN, NÚMERO DE TRÁMITE % gestión %', v_num_tramite, v_anio_ges;
+            END IF;
 
             -- chequea fechas de costos inicio y fin
             v_resp_doc =  tes.f_validar_periodo_costo(v_parametros.id_plan_pago);

@@ -35,6 +35,13 @@ Phx.vista.CuentaBancariaESIS = {
 				tooltip: '<b>Transferencia Cuenta</b><p>Transferencia entre cuentas bancarias</p>'
 			}
 		);
+		this.addButton('btnConciliacionBancaria',{
+				text: 'Conciliacion Bancaria',
+				iconCls: 'bdocuments',
+				disabled: true,
+				handler: this.onBtnConciliacionBancaria,
+				tooltip: '<b>Conciliacion Bancaria</b>'
+		});		
 	    //this.load({params:{start:0, limit:this.tam_pag, permiso : 'todos,libro_bancos'}});
 	},
 	
@@ -45,6 +52,11 @@ Phx.vista.CuentaBancariaESIS = {
       
 	preparaMenu:function(n){
       var data = this.getSelectedData();
+		if (data['id_moneda']==null){			
+			this.getBoton('btnConciliacionBancaria').disable();
+		  }else{			
+			this.getBoton('btnConciliacionBancaria').enable();
+		  }            
       var tb =this.tbar;
       Phx.vista.CuentaBancariaESIS.superclass.preparaMenu.call(this,n);  
       return tb 
@@ -113,6 +125,15 @@ Phx.vista.CuentaBancariaESIS = {
 			Ext.MessageBox.alert('Alerta', 'Antes debe seleccionar un item.');
 		}							   
 	},
+	onBtnConciliacionBancaria: function () {
+		
+		var rec = this.sm.getSelected();				
+		Phx.CP.loadWindows('../../../sis_tesoreria/vista/conciliacion_bancaria/ConciliacionBancaria.php', 'Conciliacion Bancaria', {
+			modal : true,
+			width : '95%',
+			height : '95%',
+		}, rec.data, this.idContenedor, 'ConciliacionBancaria');
+	},	
 	
 	transferir:function(wizard,resp){
 		Phx.CP.loadingShow();

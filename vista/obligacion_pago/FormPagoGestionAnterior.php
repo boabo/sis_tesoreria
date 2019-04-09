@@ -470,9 +470,9 @@ header("content-type: text/javascript; charset=UTF-8");
                                 ]
                             },
                             {
-                                columnWidth: .40,
+                                columnWidth: .30,
                                 layout: 'fit',
-                                //bodyStyle: 'padding-right:5px;',
+                                bodyStyle: 'padding-right:10px;',
                                 border: true,
                                 autoHeight: true,
                                 items: [
@@ -489,9 +489,38 @@ header("content-type: text/javascript; charset=UTF-8");
                                                 padding: '0 5 0 5',
                                                 //bodyStyle: 'padding-left:5px;',
                                                 id_grupo: 1,
+                                                items: [],
+                                            }
+
+                                        ]
+
+                                    }
+                                ]
+                            },
+                            {
+                                columnWidth: .25,
+                                layout: 'fit',
+                                //bodyStyle: 'padding-right:5px;',
+                                border: true,
+                                autoHeight: true,
+                                items: [
+                                    {
+                                        xtype: 'fieldset',
+                                        autoHeight: true,
+                                        items: [
+
+                                            {
+                                                layout: 'form',
+                                                anchor: '200%',
+                                                // bodyStyle: 'padding-right:10px;',
+                                                border: false,
+                                                padding: '0 5 0 5',
+                                                //bodyStyle: 'padding-left:5px;',
+                                                id_grupo: 2,
                                                 items: []
                                             }
                                         ]
+
                                     }
                                 ]
                             }
@@ -678,6 +707,28 @@ header("content-type: text/javascript; charset=UTF-8");
                 },
                 type:'DateField',
                 id_grupo:1,
+                form:true
+            },
+            {
+                config:{
+                    name: 'fecha_costo_ini_pp',
+                    fieldLabel: 'Fecha Inicio',
+                    allowBlank: false,
+                    format: 'd/m/Y'
+                },
+                type:'DateField',
+                id_grupo:2,
+                form:true
+            },
+            {
+                config:{
+                    name: 'fecha_costo_fin_pp',
+                    fieldLabel: 'Fecha Fin',
+                    allowBlank: false,
+                    format: 'd/m/Y'
+                },
+                type:'DateField',
+                id_grupo:2,
                 form:true
             },
             {

@@ -699,10 +699,32 @@ Phx.vista.FormObligacion=Ext.extend(Phx.frmInterfaz,{
         {
             config:{
                 name: 'fecha_pp_ini',
-                fieldLabel: 'Fecha pago.',
+                fieldLabel: 'Fecha pago',
                 qtip: 'Fecha tentativa para el pago',
                 allowBlank: false,
                 format: 'd/m/Y' 
+            },
+            type:'DateField',
+            id_grupo:1,
+            form:true
+        },
+        {
+            config:{
+                name: 'fecha_costo_ini_pp',
+                fieldLabel: 'Fecha Inicio',
+                allowBlank: false,
+                format: 'd/m/Y'
+            },
+            type:'DateField',
+            id_grupo:1,
+            form:true
+        },
+        {
+            config:{
+                name: 'fecha_costo_fin_pp',
+                fieldLabel: 'Fecha Fin',
+                allowBlank: false,
+                format: 'd/m/Y'
             },
             type:'DateField',
             id_grupo:1,

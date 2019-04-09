@@ -120,6 +120,8 @@ class MODPlanPago extends MODbase{
         $this->captura('fecha_cbte_ini','date');
         $this->captura('fecha_cbte_fin','date');
 
+        $this->captura('monto_establecido','numeric');
+
 
 
         //Ejecuta la instruccion
@@ -205,6 +207,8 @@ class MODPlanPago extends MODbase{
         $this->setParametro('fecha_costo_fin','fecha_costo_fin','date');
         $this->setParametro('es_ultima_cuota','es_ultima_cuota','boolean');
 
+        $this->setParametro('monto_establecido','monto_establecido','numeric');
+
 
 
 
@@ -262,6 +266,8 @@ class MODPlanPago extends MODbase{
         $this->setParametro('fecha_costo_fin','fecha_costo_fin','date');
         $this->setParametro('id_depto_lb','id_depto_lb','int4');
         $this->setParametro('es_ultima_cuota','es_ultima_cuota','boolean');
+
+        $this->setParametro('monto_establecido','monto_establecido','numeric');
 
 
 

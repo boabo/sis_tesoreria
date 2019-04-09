@@ -30,6 +30,8 @@ header("content-type: text/javascript; charset=UTF-8");
 
             Phx.vista.ProcesoCajaCajero.superclass.constructor.call(this,config);
 
+            this.addBotonesGantt();
+
             this.addButton('fin_registro',
                 {	text:'Siguiente',
                     iconCls: 'badelante',
@@ -353,10 +355,56 @@ header("content-type: text/javascript; charset=UTF-8");
             this.reload();
         },
 
+        addBotonesGantt: function() {
+            this.menuAdqGantt = new Ext.Toolbar.SplitButton({
+                id: 'b-diagrama_gantt-' + this.idContenedor,
+                text: 'Gantt',
+                disabled: false,
+                grupo:[0,1,2,3],
+                iconCls : 'bgantt',
+                handler:this.diagramGantt,
+                scope: this,
+                menu:{
+                    items: [{
+                        id:'b-gantti-' + this.idContenedor,
+                        text: 'Gantt Imagen',
+                        tooltip: '<b>Muestra un reporte gantt en formato de imagen</b>',
+                        handler:this.diagramGantt,
+                        scope: this
+                    }, {
+                        id:'b-ganttd-' + this.idContenedor,
+                        text: 'Gantt Dinámico',
+                        tooltip: '<b>Muestra el reporte gantt facil de entender</b>',
+                        handler:this.diagramGanttDinamico,
+                        scope: this
+                    }
+                    ]}
+            });
+            this.tbar.add(this.menuAdqGantt);
+        },
+        diagramGantt: function (){
+            var data=this.sm.getSelected().data.id_proceso_wf;
+            Phx.CP.loadingShow();
+            Ext.Ajax.request({
+                url: '../../sis_workflow/control/ProcesoWf/diagramaGanttTramite',
+                params: { 'id_proceso_wf': data },
+                success: this.successExport,
+                failure: this.conexionFailure,
+                timeout: this.timeout,
+                scope: this
+            });
+        },
+        diagramGanttDinamico: function (){
+            var data=this.sm.getSelected().data.id_proceso_wf;
+            window.open('../../../sis_workflow/reportes/gantt/gantt_dinamico.html?id_proceso_wf='+data)
+        },
+
         liberaMenu:function(){
 
             var tb = Phx.vista.ProcesoCajaCajero.superclass.liberaMenu.call(this);
-
+            if(tb){
+                this.getBoton('diagrama_gantt').enable();
+            }
             return tb
         }
     };

@@ -57,8 +57,16 @@ class RCertificacionPresupuestaria extends  ReportePDF{
                 $firma_aprobado = explode(',',$fir);
             }
         }
+        if($this->datos[0]['tipo_obligacion'] == 'pbr'){
+            if($this->datos[0]['fecha_certificacion_pres'] == null || $this->datos[0]['fecha_certificacion_pres']==''){
+                $fecha = date_format(date_create($firma_fecha[1]), 'd/m/Y');
+            }else {
+                $fecha = date_format(date_create($this->datos[0]['fecha_certificacion_pres']), 'd/m/Y');
+            }
+        }else{
+            $fecha = date_format(date_create($firma_fecha[1]), 'd/m/Y');
+        }
 
-        $fecha = date_format(date_create($firma_fecha[1]), 'd/m/Y');
 
 
         $tbl = '<table border="0" style="font-size: 7pt;"> 
@@ -104,7 +112,7 @@ class RCertificacionPresupuestaria extends  ReportePDF{
                         $id_cp = $record["id_cp"];
                         $cod_partida = $record["codigo_partida"];
                     }
-                    
+
 
                 }
                 if($codigo_cg!='') {

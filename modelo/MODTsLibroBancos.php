@@ -406,6 +406,25 @@ class MODTsLibroBancos extends MODbase{
 		
 		//Devuelve la respuesta
 		return $this->respuesta;
+	}
+	
+	function ConciliacionBancaria() {
+		$this->procedimiento='tes.ft_ts_libro_bancos_sel';
+		$this->transaccion='TES_CONCBAN_SEL';
+		$this->tipo_procedimiento='SEL';//tipo de transaccion
+		
+		$this->setCount(false);
+		$this->setParametro('id_libro_bancos','id_libro_bancos','int4');
+		//Definicion de la lista del resultado del query
+		$this->captura('email','varchar');
+		$this->captura('nombre_completo','text');
+		
+		//Ejecuta la instruccion
+		$this->armarConsulta();
+		$this->ejecutarConsulta();
+		
+		//Devuelve la respuesta
+		return $this->respuesta;				
 	}	
 }
 ?>
