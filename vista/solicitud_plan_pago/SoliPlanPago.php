@@ -119,6 +119,15 @@ header("content-type: text/javascript; charset=UTF-8");
                 handler: this.loadDocCmpVnt,
                 tooltip: '<b>Documentos de compra/venta</b><br/>Muestra los docuemntos relacionados con el comprobante'
             });
+            this.addButton('btnImportePP', {
+                // grupo: [0, 1, 2, 3, 4],
+                text: 'Consulta Importe',
+                iconCls: 'bexcel',
+                disabled: true,
+                handler: this.onImportePP,
+                tooltip: '<b>Consulta Importes de Plan Pago</b>'
+            });
+
 
             this.addButton('btnChequeoDocumentosWf',
                 {
@@ -214,6 +223,7 @@ header("content-type: text/javascript; charset=UTF-8");
             'ESPECIAL': [['especial', 'Pago simple (sin efecto presupuestario)']]
 
         },
+
 
         Atributos: [
             {
@@ -563,53 +573,51 @@ header("content-type: text/javascript; charset=UTF-8");
                 form: true
             },
             {
-                config: {
+                config:{
                     name: 'id_plantilla',
                     fieldLabel: 'Tipo Documento',
                     allowBlank: false,
-                    emptyText: 'Elija una plantilla...',
-                    store: new Ext.data.JsonStore(
+                    emptyText:'Elija una plantilla...',
+                    store:new Ext.data.JsonStore(
                         {
-                            url: '../../sis_parametros/control/Plantilla/listarPlantilla',
+                            url: '../../sis_parametros/control/Plantilla/listarPlantillaFil',
                             id: 'id_plantilla',
-                            root: 'datos',
-                            sortInfo: {
-                                field: 'desc_plantilla',
-                                direction: 'ASC'
+                            root:'datos',
+                            sortInfo:{
+                                field:'desc_plantilla',
+                                direction:'ASC'
                             },
-                            totalProperty: 'total',
+                            totalProperty:'total',
                             fields: ['id_plantilla',
                                 'nro_linea',
                                 'desc_plantilla',
-                                'tipo', 'sw_tesoro', 'sw_compro', 'sw_monto_excento', 'tipo_excento', 'valor_excento'],
+                                'tipo','sw_tesoro', 'sw_compro','sw_monto_excento','tipo_excento','valor_excento' ],
                             remoteSort: true,
-                            baseParams: {par_filtro: 'plt.desc_plantilla', sw_compro: 'si', sw_tesoro: 'si'}
+                            baseParams:{par_filtro:'plt.desc_plantilla',sw_compro:'si',sw_tesoro:'si'}
                         }),
-                    tpl: '<tpl for="."><div class="x-combo-list-item"><p>{desc_plantilla}</p></div></tpl>',
+                    tpl:'<tpl for="."><div class="x-combo-list-item"><p>{desc_plantilla}</p></div></tpl>',
                     valueField: 'id_plantilla',
                     hiddenValue: 'id_plantilla',
                     displayField: 'desc_plantilla',
-                    gdisplayField: 'desc_plantilla',
-                    listWidth: '280',
-                    forceSelection: true,
+                    gdisplayField:'desc_plantilla',
+                    listWidth:'280',
+                    forceSelection:true,
                     typeAhead: false,
                     triggerAction: 'all',
-                    lazyRender: true,
-                    mode: 'remote',
-                    pageSize: 20,
-                    queryDelay: 500,
+                    lazyRender:true,
+                    mode:'remote',
+                    pageSize:20,
+                    queryDelay:500,
 
                     gwidth: 250,
-                    minChars: 2,
-                    renderer: function (value, p, record) {
-                        return String.format('{0}', record.data['desc_plantilla']);
-                    }
+                    minChars:2,
+                    renderer:function (value, p, record){return String.format('{0}', record.data['desc_plantilla']);}
                 },
-                type: 'ComboBox',
-                filters: {pfiltro: 'pla.desc_plantilla', type: 'string'},
-                id_grupo: 1,
-                grid: true,
-                form: true
+                type:'ComboBox',
+                filters:{pfiltro:'pla.desc_plantilla',type:'string'},
+                id_grupo:1,
+                grid:true,
+                form:true
             },
             {
                 config: {
@@ -698,90 +706,49 @@ header("content-type: text/javascript; charset=UTF-8");
                 form: true
             },
             {
-                config: {
+                config:{
                     name: 'forma_pago',
                     fieldLabel: 'Forma de Pago',
                     allowBlank: false,
-                    emptyText: 'Forma de Pago...',
-                    typeAhead: true,
+                    emptyText:'Forma de Pago...',
+                    store:new Ext.data.JsonStore(
+                        {
+                            url: '../../sis_parametros/control/FormaPago/listarFormaPagofil',
+                            id: 'id_forma_pago',
+                            root:'datos',
+                            sortInfo:{
+                                field:'desc_forma_pago',
+                                direction:'ASC'
+                            },
+                            totalProperty:'total',
+                            fields: ['id_forma_pago','desc_forma_pago','observaciones','cod_inter'],
+                            remoteSort: true,
+                            baseParams:{par_filtro:'desc_forma_pago'}
+                        }),
+                    tpl:'<tpl for="."><div class="x-combo-list-item"><p>{desc_forma_pago}</p></div></tpl>',
+                    valueField: 'desc_forma_pago',
+                    hiddenValue: 'id_forma_pago',
+                    displayField: 'desc_forma_pago',
+                    gdisplayField:'desc_forma_pago',
+                    listWidth:'280',
+                    forceSelection:true,
+                    typeAhead: false,
                     triggerAction: 'all',
-                    lazyRender: true,
-                    mode: 'local',
-                    valueField: 'estilo',
-                    gwidth: 100,
-                    store: new Ext.data.ArrayStore({
-                        fields: ['variable', 'valor'],
-                        data: [['cheque', 'Cheque'],
-                            ['transferencia', 'Transferencia'],
-                            ['bill_pay', 'Bill Pay'],
-                            ['debit_card', 'Debit Card'],
-                            ['direct_pay', 'Direct Pay'],
-                            ['eck', 'ECK'],
-                            ['wt', 'WT']
-                        ]
-                    }),
-                    valueField: 'variable',
-                    displayField: 'valor'
+                    lazyRender:true,
+                    mode:'remote',
+                    pageSize:20,
+                    queryDelay:500,
+
+                    gwidth: 250,
+                    minChars:2,
+                    renderer:function (value, p, record){return String.format('{0}', record.data['forma_pago']);}
                 },
-                type: 'ComboBox',
-                id_grupo: 1,
-                filters: {
-                    type: 'list',
-                    pfiltro: 'plapa.forma_pago',
-                    options: ['cheque', 'deposito', 'debito_automatico', 'transferencia_carta'],
-                },
-                grid: true,
-                form: true
+                type:'ComboBox',
+                filters:{pfiltro:'plapa.forma_pago',type:'string'},
+                id_grupo:1,
+                grid:true,
+                form:true
             },
-            // {
-            //     config: {
-            //         name: 'forma_pago',
-            //         fieldLabel: 'Forma de Pago',
-            //         gwidth: 100,
-            //         maxLength: 30,
-            //         items: [
-            //             {boxLabel: 'Cheque', name: 'fp-auto', inputValue: 'cheque', checked: true},
-            //             {boxLabel: 'Transferencia', name: 'fp-auto', inputValue: 'transferencia'}
-            //             //,{boxLabel: 'Caja',name: 'fp-auto', inputValue: 'Caja'}
-            //         ]
-            //     },
-            //     type: 'RadioGroupField',
-            //     filters: {pfiltro: 'plapa.forma_pago', type: 'string'},
-            //     id_grupo: 1,
-            //     grid: false,
-            //     form: true
-            // },
-            // {
-            //     config: {
-            //         name: 'nro_cheque',
-            //         fieldLabel: 'Número Cheque',
-            //         allowBlank: true,
-            //         anchor: '80%',
-            //         gwidth: 100,
-            //         maxLength: 255
-            //     },
-            //     type: 'NumberField',
-            //     filters: {pfiltro: 'plapa.nro_cheque', type: 'numeric'},
-            //     id_grupo: 1,
-            //     grid: true,
-            //     form: true
-            // },
-            // {
-            //     config: {
-            //         name: 'nro_cuenta_bancaria',
-            //         fieldLabel: 'Banco y Cuenta Bancaria Dest.',
-            //         allowBlank: true,
-            //         anchor: '80%',
-            //         gwidth: 100,
-            //         maxLength: 50//,
-            //         //disabled:true
-            //     },
-            //     type: 'TextField',
-            //     filters: {pfiltro: 'plapa.nro_cuenta_bancaria', type: 'string'},
-            //     id_grupo: 1,
-            //     grid: true,
-            //     form: true
-            // },
             {
                 config: {
                     name: 'id_proveedor_cta_bancaria',
@@ -1571,6 +1538,8 @@ header("content-type: text/javascript; charset=UTF-8");
                 scope: this
             });
         },
+
+
         loadDocCmpVnt: function () {
             var rec = this.sm.getSelected();
             console.log('rec', rec);
@@ -1581,6 +1550,26 @@ header("content-type: text/javascript; charset=UTF-8");
                 width: '70%',
                 height: '80%'
             }, rec.data, this.idContenedor, 'SolDocCompraVentaCbte');
+        },
+        onImportePP: function(){
+            var rec=this.sm.getSelected();
+            Phx.CP.loadingShow();
+            // console.debug(rec);
+            console.log('acaaaa',rec);
+            Ext.Ajax.request({
+                url:'../../sis_tesoreria/control/ConsultaImportePP/importePP',
+                params:{'id_plan_pago':rec.data.id_plan_pago},
+                success: this.successExport,
+                failure: this.conexionFailure,
+                timeout: this.timeout,
+                // failure: function() {
+                //     alert("fail");
+                // },
+                // timeout: function() {
+                //     alert("timeout");
+                // },
+                scope:this
+            });
         },
 
         antEstado: function (res) {
@@ -1631,8 +1620,30 @@ header("content-type: text/javascript; charset=UTF-8");
         sigEstado: function () {
             var rec = this.sm.getSelected();
 
+            //aviso para completar datos del formulario antes de pasar al siguiente estado
+            if (rec.data['forma_pago'] == '' || rec.data['forma_pago'] == null ||
+                rec.data['id_cuenta_bancaria'] == '' || rec.data['id_cuenta_bancaria'] == null ||
+                rec.data['id_proveedor_cta_bancaria'] == '' || rec.data['id_proveedor_cta_bancaria'] == null
+            ) {
 
-            this.mostrarWizard(rec);
+                Ext.Msg.show({
+                    title: 'Confirmación',
+                    scope: this,
+                    msg: 'Registre datos del Plan de Pago antes de pasar al siguiente estado.',
+                    // buttons: Ext.Msg.YESNO,
+                    buttons: Ext.Msg.OK,
+                    fn: function (id, value, opt) {
+                        if (id == 'ok') {
+                            opt.hide;
+                        }
+                    },
+                    animEl: 'elId',
+                    icon: Ext.MessageBox.WARNING
+                }, this);
+
+            }else {
+                this.mostrarWizard(rec);
+            }
 
 
         },
@@ -1875,7 +1886,7 @@ header("content-type: text/javascript; charset=UTF-8");
             this.Cmp.tipo.store.loadData(this.arrayStore.TODOS);
             this.ocultarGrupo(2); //ocultar el grupo de ajustes
             //segun el tipo define los campo visibles y no visibles
-            // this.setTipoPago[data.tipo](this, data);
+            this.setTipoPago[data.tipo](this, data);
             this.tmp_porc_monto_excento_var = undefined;
 
             if (data.tipo == 'pagado') {
